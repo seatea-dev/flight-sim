@@ -1,5 +1,14 @@
 import * as THREE from 'three';
-import { LIGHTHOUSE } from './route';
+import {
+  BUILDINGS,
+  HILLS,
+  ISLAND_RADIUS,
+  LIGHTHOUSE,
+  ROCKS,
+  RUNWAY_HALF_LENGTH,
+  RUNWAY_HALF_WIDTH,
+  TREES,
+} from './route';
 
 const material = (color: number) =>
   new THREE.MeshStandardMaterial({ color, roughness: 1, flatShading: true });
@@ -56,13 +65,7 @@ function addBuilding(scene: THREE.Scene, x: number, z: number, width: number, de
 
 function addScenery(scene: THREE.Scene) {
   const hillColors = [0x78956d, 0x6f8d68, 0x8aa073];
-  for (const [x, z, radius, height, shade] of [
-    [-335, -230, 125, 41, 0],
-    [-350, 120, 150, 34, 1],
-    [320, -125, 135, 29, 2],
-    [345, 295, 120, 36, 0],
-    [-105, 410, 110, 20, 2],
-  ]) {
+  for (const [x, z, radius, height, shade] of HILLS) {
     const hill = new THREE.Mesh(
       new THREE.ConeGeometry(radius, height, 7),
       material(hillColors[shade]),
@@ -73,40 +76,13 @@ function addScenery(scene: THREE.Scene) {
     scene.add(hill);
   }
 
-  for (const [x, z, scale] of [
-    [-180, -270, 1],
-    [-245, -275, 0.85],
-    [-180, -195, 0.9],
-    [-240, -90, 1.1],
-    [-160, 40, 0.9],
-    [-250, 65, 1.1],
-    [-260, 225, 1],
-    [-160, 310, 0.8],
-    [-65, 390, 0.85],
-    [195, -305, 0.9],
-    [265, -250, 1],
-    [245, -25, 0.85],
-    [175, 90, 0.9],
-    [280, 115, 1.1],
-    [220, 240, 0.85],
-    [135, 375, 0.9],
-    [330, 350, 0.8],
-  ])
-    addTree(scene, x, z, scale);
+  for (const [x, z, scale] of TREES) addTree(scene, x, z, scale);
 
-  addBuilding(scene, -88, 35, 30, 22);
-  addBuilding(scene, -110, 86, 19, 18);
-  addBuilding(scene, 95, 140, 25, 20);
+  for (const [x, z, width, depth] of BUILDINGS) addBuilding(scene, x, z, width, depth);
 
   const rock = material(0x737c73);
   const paleRock = material(0x9d9e86);
-  for (const [x, z, radius, height] of [
-    [45, -525, 72, 19],
-    [75, -575, 65, 25],
-    [LIGHTHOUSE.x, LIGHTHOUSE.z, 68, 30],
-    [145, -605, 25, 17],
-    [18, -630, 22, 14],
-  ]) {
+  for (const [x, z, radius, height] of ROCKS) {
     const outcrop = new THREE.Mesh(
       new THREE.CylinderGeometry(radius * 0.72, radius, height, 7),
       radius > 50 ? rock : paleRock,
@@ -344,12 +320,12 @@ export function createWorld(container: HTMLElement) {
   const ocean = groundPlane(4000, 4000, 0x3a8ca4, -4.2);
   scene.add(ocean);
   scene.add(coastLayer(610, -1.4, -5.5, 0xd9c99d));
-  scene.add(coastLayer(560, 0.1, -2, 0x839f72));
+  scene.add(coastLayer(ISLAND_RADIUS, 0.1, -2, 0x839f72));
 
   addScenery(scene);
 
   scene.add(groundPlane(52, 540, 0xbaa984, 0.16));
-  scene.add(groundPlane(38, 520, 0x39484a, 0.18));
+  scene.add(groundPlane(RUNWAY_HALF_WIDTH * 2, RUNWAY_HALF_LENGTH * 2, 0x39484a, 0.18));
   for (let z = -225; z <= 225; z += 35) {
     const centerline = groundPlane(1.2, 14, 0xf5e9ce, 0.2);
     centerline.position.z = z;

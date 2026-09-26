@@ -296,6 +296,48 @@ button {
 .start-screen[hidden] {
   display: none;
 }
+.result-screen {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(13, 39, 45, 0.46);
+}
+.result-screen[hidden] {
+  display: none;
+}
+.result-card {
+  width: min(430px, calc(100vw - 40px));
+  padding: 32px 36px;
+  border-radius: 5px;
+  background: #f5f3e9;
+  color: #20333a;
+  box-shadow: 0 22px 70px rgba(16, 48, 53, 0.3);
+}
+.result-eyebrow {
+  color: #358c88;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+.result-card h2 {
+  margin: 12px 0;
+  font:
+    600 38px 'Trebuchet MS',
+    Arial,
+    sans-serif;
+  letter-spacing: -0.05em;
+}
+.result-card p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.result-restart {
+  margin: 26px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid #ccd5cf;
+}
 .start-backdrop {
   background: linear-gradient(
     90deg,
