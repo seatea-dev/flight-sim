@@ -140,6 +140,21 @@ describe('takeoff and flight', () => {
     expect(right.bank).toBe(0);
   });
 
+  it('settles the nose and bank after a steering correction', () => {
+    const session = new GameSession();
+    session.begin();
+    flyFor(session, 5, { throttleUp: true });
+    flyFor(session, 3, { pitchUp: true, steerRight: true });
+    const correcting = session.state;
+    const settled = flyFor(session, 3);
+
+    expect(correcting.pitch).toBeGreaterThan(0.2);
+    expect(correcting.bank).toBeGreaterThan(0.2);
+    expect(Math.abs(settled.pitch)).toBeLessThan(0.02);
+    expect(Math.abs(settled.bank)).toBeLessThan(0.02);
+    expect(settled.airborne).toBe(true);
+  });
+
   it('loses lift when slow and recovers after throttle is restored', () => {
     const session = new GameSession();
     session.begin();

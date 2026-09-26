@@ -81,10 +81,10 @@ const tuning = {
   brakeStrength: 55,
   takeoffSpeed: 25,
   pitchRate: 0.65,
-  bankRate: 1.1,
+  bankRate: 1.05,
   yawRate: 0.38,
   gravity: 9.8,
-  liftSpeed: 35,
+  liftSpeed: 31,
   landingSpeed: 33,
   landingDescent: 10,
   landingHeading: 0.55,
@@ -186,7 +186,7 @@ export class GameSession {
         ? clamp(
             previous.pitch +
               pitchInput * tuning.pitchRate * dt -
-              (pitchInput ? 0 : previous.pitch * 0.7 * dt),
+              (pitchInput ? 0 : previous.pitch * 1.4 * dt),
             -0.4,
             0.55,
           )
@@ -219,25 +219,29 @@ export class GameSession {
 
     const bankInput = axis(input.steerRight, input.steerLeft);
     const bank = clamp(
-      previous.bank + bankInput * tuning.bankRate * dt - (bankInput ? 0 : previous.bank * 0.8 * dt),
-      -0.65,
-      0.65,
+      previous.bank + bankInput * tuning.bankRate * dt - (bankInput ? 0 : previous.bank * 2.2 * dt),
+      -0.55,
+      0.55,
     );
     const yaw = axis(input.yawRight, input.yawLeft);
     const controlAuthority = clamp(previous.speed / 28, 0.35, 1);
-    const heading = previous.heading + (yaw * tuning.yawRate + bank * 0.72) * controlAuthority * dt;
+    const heading = previous.heading + (yaw * tuning.yawRate + bank * 0.55) * controlAuthority * dt;
     const lift =
       tuning.gravity *
       (previous.speed / tuning.liftSpeed) ** 2 *
-      clamp(1 + 2 * pitch, 0.2, 2.1) *
+      clamp(1 + 1.4 * pitch, 0.3, 1.8) *
       Math.cos(bank);
-    const verticalSpeed = clamp(previous.verticalSpeed + (lift - tuning.gravity) * dt, -20, 18);
+    const verticalSpeed = clamp(
+      previous.verticalSpeed + (lift - tuning.gravity - previous.verticalSpeed * 1.1) * dt,
+      -12,
+      12,
+    );
     const altitude = Math.max(0, previous.altitude + verticalSpeed * dt);
     const speed = clamp(
       previous.speed +
         (tuning.flightThrust * throttle - drag - verticalSpeed * 0.35 - pitch * 3) * dt,
       0,
-      48,
+      39,
     );
     const airborne = altitude > 0 || verticalSpeed > 0;
     this.current = {
