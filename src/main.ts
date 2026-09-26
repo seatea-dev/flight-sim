@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { keyboardInput } from './controls';
+import { DISTANT_RETURN_RADIUS } from './route';
 import { GameSession, type FlightState } from './session';
 import { createWorld } from './world';
 import './style.css';
@@ -15,12 +16,15 @@ const altitudeValue = document.querySelector<HTMLElement>('#altitude-value')!;
 const objectiveLabel = document.querySelector<HTMLElement>('#objective-label')!;
 const objectiveTitle = document.querySelector<HTMLElement>('#objective-title')!;
 const objectiveDetail = document.querySelector<HTMLElement>('#objective-detail')!;
+const landmarkNotice = document.querySelector<HTMLElement>('#landmark-notice')!;
+const returnCue = document.querySelector<HTMLElement>('#return-cue')!;
+const returnArrow = document.querySelector<HTMLElement>('#return-arrow')!;
 const flightStatus = document.querySelector<HTMLElement>('#flight-status')!;
 const flightHint = document.querySelector<HTMLElement>('#flight-hint')!;
 
 const session = new GameSession();
 const heldKeys = new Set<string>();
-const { scene, renderer, camera, jet, gear } = createWorld(sceneElement);
+const { scene, renderer, camera, jet, gear, ocean } = createWorld(sceneElement);
 const initialPose = cameraPose(session.state);
 const cameraTarget = initialPose.target;
 camera.position.copy(initialPose.position);
@@ -69,6 +73,8 @@ renderer.setAnimationLoop((time) => {
   const elapsedSeconds = previousTime ? Math.min((time - previousTime) / 1000, 0.05) : 0;
   previousTime = time;
   const state = session.update(keyboardInput(heldKeys), elapsedSeconds);
+  ocean.position.x = state.x;
+  ocean.position.z = state.z;
   jet.position.set(state.x, 2.65 + state.altitude, state.z);
   jet.rotation.order = 'YXZ';
   jet.rotation.y = -state.heading;
@@ -87,13 +93,31 @@ renderer.setAnimationLoop((time) => {
   throttleFill.style.width = `${percent}%`;
   airspeedValue.textContent = `${Math.round(state.speed * 3.6)}`;
   altitudeValue.textContent = `${Math.round(state.altitude)}`;
-  objectiveLabel.textContent = state.objective === 'takeoff' ? 'RUNWAY START' : 'FREE FLIGHT';
+  objectiveLabel.textContent =
+    state.objective === 'takeoff'
+      ? 'RUNWAY START'
+      : state.objective === 'return'
+        ? 'RETURN LEG'
+        : 'LIGHTHOUSE ROUTE';
   objectiveTitle.textContent =
-    state.objective === 'takeoff' ? 'Take off from the runway' : 'Fly the coast';
+    state.objective === 'takeoff'
+      ? 'Take off from the runway'
+      : state.objective === 'return'
+        ? 'Return to the runway'
+        : 'Fly past the lighthouse';
   objectiveDetail.textContent =
     state.objective === 'takeoff'
       ? 'Build speed, then hold S to raise the nose.'
-      : 'W LOWERS · S RAISES · A / D BANK · Q / E YAW';
+      : state.objective === 'return'
+        ? 'Use the runway cue to turn back toward the island.'
+        : state.distanceFromRunway > DISTANT_RETURN_RADIUS
+          ? 'Far from the island. Follow the runway cue to return.'
+          : 'Look for the striped lighthouse beyond the north shore.';
+  landmarkNotice.hidden = state.landmarkNoticeSeconds <= 0;
+  returnCue.hidden = state.runwayBearing === null;
+  if (state.runwayBearing !== null) {
+    returnArrow.style.transform = `rotate(${state.runwayBearing}rad)`;
+  }
   flightStatus.textContent = state.airborne
     ? state.speed < 23
       ? 'LOW AIRSPEED'

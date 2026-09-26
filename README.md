@@ -1,6 +1,6 @@
 # Island Circuit
 
-A small browser flight simulator, built one playable slice at a time. The current slice covers runway taxi, takeoff, and free flight with a recoverable stall.
+A small browser flight simulator, built one playable slice at a time. Take off from the coastal runway, pass the lighthouse on the north point, and follow the runway cue back toward the island.
 
 Hold Shift to increase throttle, then hold S during the ground roll to raise the nose and take off. In the air, W lowers the nose and S raises it. A and D bank, and Q and E yaw. Ctrl reduces throttle. On the ground, A and D steer and Space brakes. Landing gear moves automatically.
 

@@ -126,3 +126,53 @@ describe('takeoff and flight', () => {
     expect(recovering.airborne).toBe(true);
   });
 });
+
+describe('lighthouse route', () => {
+  it('counts one airborne lighthouse pass and changes the objective to return', () => {
+    const session = new GameSession();
+    session.begin();
+    flyFor(session, 5, { throttleUp: true });
+    flyFor(session, 4, { pitchUp: true });
+    expect(session.state.objective).toBe('fly');
+    expect(session.state.landmarkPassed).toBe(false);
+
+    let passed = session.state;
+    for (let elapsed = 0; elapsed < 25 && !passed.landmarkPassed; elapsed += 0.05) {
+      passed = session.update({}, 0.05);
+    }
+    expect(passed.landmarkPassed).toBe(true);
+    expect(passed.objective).toBe('return');
+    expect(passed.runwayBearing).not.toBeNull();
+    expect(passed.landmarkNoticeSeconds).toBeGreaterThan(0);
+
+    const later = flyFor(session, 10);
+    expect(later.landmarkPassed).toBe(true);
+    expect(later.objective).toBe('return');
+    expect(later.landmarkPasses).toBe(1);
+    expect(later.landmarkNoticeSeconds).toBe(0);
+  });
+
+  it('does not count a ground pass by the lighthouse', () => {
+    const session = new GameSession();
+    session.begin();
+    flyFor(session, 5, { throttleUp: true });
+    const nearLighthouse = flyFor(session, 25);
+    expect(nearLighthouse.airborne).toBe(false);
+    expect(nearLighthouse.landmarkPassed).toBe(false);
+    expect(nearLighthouse.objective).toBe('takeoff');
+  });
+
+  it('offers a runway cue far from the island without ending the flight', () => {
+    const session = new GameSession();
+    session.begin();
+    flyFor(session, 5, { throttleUp: true });
+    flyFor(session, 4, { pitchUp: true });
+    flyFor(session, 4, { yawRight: true });
+    const distant = flyFor(session, 40);
+    expect(distant.distanceFromRunway).toBeGreaterThan(1100);
+    expect(distant.landmarkPassed).toBe(false);
+    expect(distant.objective).toBe('fly');
+    expect(distant.runwayBearing).not.toBeNull();
+    expect(distant.airborne).toBe(true);
+  });
+});

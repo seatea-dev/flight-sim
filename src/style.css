@@ -99,6 +99,10 @@ button {
 .hud[hidden] {
   display: none;
 }
+.landmark-notice[hidden],
+.return-cue[hidden] {
+  display: none;
+}
 .objective {
   position: absolute;
   top: 100px;
@@ -130,6 +134,48 @@ button {
   font-size: 13px;
   margin: 0;
   color: #f1f8f4;
+}
+.landmark-notice {
+  position: absolute;
+  top: 95px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 4px;
+  background: rgba(26, 70, 70, 0.8);
+  box-shadow: 0 8px 28px rgba(12, 42, 47, 0.18);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+.landmark-notice span {
+  margin: 0 5px;
+  color: #ffdda7;
+}
+.return-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 31px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 40px;
+  background: rgba(19, 51, 56, 0.54);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+.return-arrow {
+  display: inline-block;
+  color: #ffdfa5;
+  font-size: 19px;
+  line-height: 0.8;
+  transition: transform 0.15s linear;
 }
 .throttle {
   position: absolute;
