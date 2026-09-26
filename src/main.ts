@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { GameSession, type FlightInput, type FlightState } from './session';
+import { keyboardInput } from './controls';
+import { GameSession, type FlightState } from './session';
 import { createWorld } from './world';
 import './style.css';
 
@@ -41,20 +42,6 @@ function cameraPose(state: FlightState) {
   };
 }
 
-function flightInput(): FlightInput {
-  return {
-    throttleUp: heldKeys.has('ShiftLeft') || heldKeys.has('ShiftRight'),
-    throttleDown: heldKeys.has('ControlLeft') || heldKeys.has('ControlRight'),
-    steerLeft: heldKeys.has('KeyA'),
-    steerRight: heldKeys.has('KeyD'),
-    pitchUp: heldKeys.has('KeyW'),
-    pitchDown: heldKeys.has('KeyS'),
-    yawLeft: heldKeys.has('KeyQ'),
-    yawRight: heldKeys.has('KeyE'),
-    brake: heldKeys.has('Space'),
-  };
-}
-
 beginButton.addEventListener('click', () => {
   session.begin();
   startScreen.hidden = true;
@@ -81,7 +68,7 @@ window.addEventListener('resize', () => {
 renderer.setAnimationLoop((time) => {
   const elapsedSeconds = previousTime ? Math.min((time - previousTime) / 1000, 0.05) : 0;
   previousTime = time;
-  const state = session.update(flightInput(), elapsedSeconds);
+  const state = session.update(keyboardInput(heldKeys), elapsedSeconds);
   jet.position.set(state.x, 2.65 + state.altitude, state.z);
   jet.rotation.order = 'YXZ';
   jet.rotation.y = -state.heading;
@@ -105,15 +92,15 @@ renderer.setAnimationLoop((time) => {
     state.objective === 'takeoff' ? 'Take off from the runway' : 'Fly the coast';
   objectiveDetail.textContent =
     state.objective === 'takeoff'
-      ? 'Build speed, then hold W to raise the nose.'
-      : 'Use W / S to pitch, A / D to bank, and Q / E to yaw.';
+      ? 'Build speed, then hold S to raise the nose.'
+      : 'W LOWERS · S RAISES · A / D BANK · Q / E YAW';
   flightStatus.textContent = state.airborne
     ? state.speed < 23
       ? 'LOW AIRSPEED'
       : 'AIRBORNE'
     : 'ON GROUND';
   flightHint.textContent = state.airborne
-    ? 'W / S PITCH · A / D BANK · Q / E YAW'
+    ? 'W NOSE DOWN · S NOSE UP · A / D BANK · Q / E YAW'
     : 'A / D STEER · SPACE BRAKE';
   renderer.render(scene, camera);
 });
