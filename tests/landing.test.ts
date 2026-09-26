@@ -54,9 +54,9 @@ describe('circuit resolution', () => {
   });
 
   it.each([
-    ['steep touchdown', 'hard landing', { verticalSpeed: -15 }],
-    ['fast touchdown', 'hard landing', { speed: 48, altitude: 1, verticalSpeed: -6 }],
-    ['misaligned touchdown', 'hard landing', { heading: 0.8 }],
+    ['steep touchdown', 'hard landing', { altitude: 1, verticalSpeed: -15 }],
+    ['fast touchdown', 'hard landing', { speed: 48, altitude: 0.2, verticalSpeed: -10 }],
+    ['misaligned touchdown', 'hard landing', { altitude: 1, heading: 0.8 }],
     ['off-runway touchdown', 'off runway', { x: 35 }],
     ['water contact', 'water', { x: 700, z: 0, altitude: 1 }],
     ['terrain contact', 'terrain', { x: -335, z: -230, altitude: 12 }],

@@ -173,7 +173,7 @@ renderer.setAnimationLoop((time) => {
     : state.objective === 'takeoff'
       ? 'Build speed, then hold S to raise the nose.'
       : state.objective === 'return'
-        ? 'Use the runway cue to turn back toward the island.'
+        ? 'Follow the runway cue, slow below 120 km/h, and descend to land.'
         : state.distanceFromRunway > DISTANT_RETURN_RADIUS
           ? 'Far from the island. Follow the runway cue to return.'
           : 'Look for the striped lighthouse beyond the north shore.';
@@ -186,7 +186,9 @@ renderer.setAnimationLoop((time) => {
     ? state.speed < 23
       ? 'LOW AIRSPEED'
       : 'AIRBORNE'
-    : 'ON GROUND';
+    : state.landingPending
+      ? 'BRAKE TO STOP'
+      : 'ON GROUND';
   resultScreen.hidden = state.result === null;
   if (state.result) {
     resultLabel.textContent = state.result === 'crash' ? 'FLIGHT ENDED' : 'CIRCUIT RESULT';

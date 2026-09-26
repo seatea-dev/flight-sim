@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "format:check": "prettier --check README.md index.html src tests package.json tsconfig.json"
+    "format:check": "prettier --check README.md index.html src tests package.json tsconfig.json vite.config.ts"
   },
   "dependencies": {
     "three": "^0.186.1"
