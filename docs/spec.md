@@ -19,7 +19,7 @@ The first visit starts with a brief controls panel and a Begin flight action. Ba
 1. As a new player, I want to see the controls before the first flight, so that I can take off without guessing.
 2. As a player, I want to begin on the runway, so that takeoff is part of every circuit.
 3. As a player, I want one recognizable jet, so that I can learn its handling quickly.
-4. As a player, I want W to raise the nose and S to lower it, so that pitch matches the agreed controls.
+4. As a player, I want W to lower the nose and S to raise it, so that pitch matches the playtested controls.
 5. As a player, I want A and D to bank in flight, so that I can turn toward the lighthouse and runway.
 6. As a player, I want A and D to steer on the ground, so that I can keep the jet on the runway.
 7. As a player, I want Q and E to control yaw, so that I can make small heading corrections.
@@ -55,7 +55,7 @@ The first visit starts with a brief controls panel and a Begin flight action. Ba
 - Use a game-session coordinator as the boundary between controls, simulation, and presentation. It accepts current input and elapsed time, advances the flight and circuit, and exposes observable aircraft data, objective progress, and result state. The renderer, HUD, and audio read that state rather than independently deciding whether a landmark or landing counts.
 - Track the circuit as runway start, outbound flight, landmark passed, return, and terminal result. Passing the lighthouse requires the airborne jet to enter a generous proximity area once. The circuit has no timer. Landing before passing the lighthouse produces an incomplete result after slowing.
 - Evaluate landing at touchdown using runway location, speed, and descent rate. Allow modest heading error. Retain a pending safe or incomplete landing until the jet slows enough to show the result. End the attempt on hard or off-runway touchdown and on collision with water, terrain, or solid structures. Keep a low-speed stall recoverable.
-- Use keyboard controls as agreed: W nose up, S nose down, A/D bank in flight and steer on the ground, Q/E yaw, Shift/Ctrl throttle adjustment, Space brake, Esc pause, R restart, and M mute. The first-flight panel and pause view display the mapping. Pause stops simulation progress.
+- Use keyboard controls as agreed: W nose down, S nose up, A/D bank in flight and steer on the ground, Q/E yaw, Shift/Ctrl throttle adjustment, Space brake, Esc pause, R restart, and M mute. The first-flight panel and pause view display the mapping. Pause stops simulation progress.
 - Handle landing gear automatically; omit flap controls. Restart returns the jet and circuit to their initial runway state without returning to the first-flight panel.
 - Use a smoothed chase camera. Keep the horizon and runway legible through banking and approach, and avoid camera motion that obscures touchdown.
 - Build a cohesive low-poly island with simple geometry for terrain, coastline, runway, lighthouse, trees, and a small number of buildings. Give the jet a clear silhouette; choose between custom geometry and one imported model during implementation based on visual quality and asset cost. Avoid a large asset library or heavy postprocessing.

@@ -1,65 +1,169 @@
-export type GroundInput = {
+export type FlightInput = {
   throttleUp?: boolean;
   throttleDown?: boolean;
   steerLeft?: boolean;
   steerRight?: boolean;
+  pitchUp?: boolean;
+  pitchDown?: boolean;
+  yawLeft?: boolean;
+  yawRight?: boolean;
   brake?: boolean;
 };
 
-export type GroundState = Readonly<{
+export type FlightState = Readonly<{
   started: boolean;
   x: number;
   z: number;
+  altitude: number;
   heading: number;
+  pitch: number;
+  bank: number;
   speed: number;
+  verticalSpeed: number;
   throttle: number;
+  airborne: boolean;
+  gearDown: boolean;
+  objective: 'takeoff' | 'fly';
 }>;
 
-const initialState: GroundState = {
+const initialState: FlightState = {
   started: false,
   x: 0,
   z: 170,
+  altitude: 0,
   heading: 0,
+  pitch: 0,
+  bank: 0,
   speed: 0,
+  verticalSpeed: 0,
   throttle: 0,
+  airborne: false,
+  gearDown: true,
+  objective: 'takeoff',
 };
 
-export class GameSession {
-  private current: GroundState = { ...initialState };
+const tuning = {
+  throttleRate: 0.55,
+  groundThrust: 42,
+  flightThrust: 38,
+  brakeStrength: 55,
+  takeoffSpeed: 25,
+  pitchRate: 0.65,
+  bankRate: 1.1,
+  yawRate: 0.38,
+  gravity: 9.8,
+  liftSpeed: 35,
+};
 
-  get state(): GroundState {
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+const axis = (positive?: boolean, negative?: boolean) =>
+  Number(Boolean(positive)) - Number(Boolean(negative));
+
+export class GameSession {
+  private current: FlightState = { ...initialState };
+
+  get state(): FlightState {
     return { ...this.current };
   }
 
-  begin(): GroundState {
+  begin(): FlightState {
     this.current = { ...this.current, started: true };
     return this.state;
   }
 
-  update(input: GroundInput, elapsedSeconds: number): GroundState {
+  update(input: FlightInput, elapsedSeconds: number): FlightState {
     if (!this.current.started || elapsedSeconds <= 0) return this.state;
 
-    const throttleDirection =
-      Number(Boolean(input.throttleUp)) - Number(Boolean(input.throttleDown));
-    const throttle = Math.max(
-      0,
-      Math.min(1, this.current.throttle + throttleDirection * 0.55 * elapsedSeconds),
-    );
-    const drag = 1.2 + 0.018 * this.current.speed ** 2;
-    const acceleration = 42 * throttle - drag - (input.brake ? 55 : 0);
-    const speed = Math.max(0, Math.min(28, this.current.speed + acceleration * elapsedSeconds));
-    const steering = Number(Boolean(input.steerRight)) - Number(Boolean(input.steerLeft));
-    const steeringRate = Math.min(speed / 30, 1) * 0.45;
-    const heading = this.current.heading + steering * steeringRate * elapsedSeconds;
-
-    this.current = {
-      started: true,
-      x: this.current.x + Math.sin(heading) * speed * elapsedSeconds,
-      z: this.current.z - Math.cos(heading) * speed * elapsedSeconds,
-      heading,
-      speed,
-      throttle,
-    };
+    let remaining = elapsedSeconds;
+    while (remaining > 0) {
+      const step = Math.min(remaining, 1 / 60);
+      this.advance(input, step);
+      remaining -= step;
+    }
     return this.state;
+  }
+
+  private advance(input: FlightInput, dt: number): void {
+    const previous = this.current;
+    const throttle = clamp(
+      previous.throttle + axis(input.throttleUp, input.throttleDown) * tuning.throttleRate * dt,
+      0,
+      1,
+    );
+    const pitchInput = axis(input.pitchUp, input.pitchDown);
+    const pitch =
+      previous.airborne || previous.speed >= tuning.takeoffSpeed * 0.6
+        ? clamp(
+            previous.pitch +
+              pitchInput * tuning.pitchRate * dt -
+              (pitchInput ? 0 : previous.pitch * 0.7 * dt),
+            -0.4,
+            0.55,
+          )
+        : 0;
+    const drag = 1.2 + 0.018 * previous.speed ** 2;
+
+    if (!previous.airborne) {
+      const acceleration =
+        tuning.groundThrust * throttle - drag - (input.brake ? tuning.brakeStrength : 0);
+      const speed = clamp(previous.speed + acceleration * dt, 0, 28);
+      const steering = axis(input.steerRight, input.steerLeft);
+      const heading = previous.heading + steering * Math.min(speed / 30, 1) * 0.45 * dt;
+      const airborne = speed >= tuning.takeoffSpeed && pitch >= 0.12;
+      this.current = {
+        ...previous,
+        x: previous.x + Math.sin(heading) * speed * dt,
+        z: previous.z - Math.cos(heading) * speed * dt,
+        heading,
+        speed,
+        throttle,
+        pitch,
+        bank: 0,
+        verticalSpeed: airborne ? 1.5 : 0,
+        airborne,
+        gearDown: true,
+        objective: airborne ? 'fly' : previous.objective,
+      };
+      return;
+    }
+
+    const bankInput = axis(input.steerRight, input.steerLeft);
+    const bank = clamp(
+      previous.bank + bankInput * tuning.bankRate * dt - (bankInput ? 0 : previous.bank * 0.8 * dt),
+      -0.65,
+      0.65,
+    );
+    const yaw = axis(input.yawRight, input.yawLeft);
+    const controlAuthority = clamp(previous.speed / 28, 0.35, 1);
+    const heading = previous.heading + (yaw * tuning.yawRate + bank * 0.72) * controlAuthority * dt;
+    const lift =
+      tuning.gravity *
+      (previous.speed / tuning.liftSpeed) ** 2 *
+      clamp(1 + 2 * pitch, 0.2, 2.1) *
+      Math.cos(bank);
+    const verticalSpeed = clamp(previous.verticalSpeed + (lift - tuning.gravity) * dt, -20, 18);
+    const altitude = Math.max(0, previous.altitude + verticalSpeed * dt);
+    const speed = clamp(
+      previous.speed +
+        (tuning.flightThrust * throttle - drag - verticalSpeed * 0.35 - pitch * 3) * dt,
+      0,
+      48,
+    );
+    const airborne = altitude > 0 || verticalSpeed > 0;
+    this.current = {
+      ...previous,
+      x: previous.x + Math.sin(heading) * speed * dt,
+      z: previous.z - Math.cos(heading) * speed * dt,
+      altitude,
+      heading,
+      pitch,
+      bank,
+      speed,
+      verticalSpeed: airborne ? verticalSpeed : 0,
+      throttle,
+      airborne,
+      gearDown: altitude < 8,
+      objective: 'fly',
+    };
   }
 }
