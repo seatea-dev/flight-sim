@@ -1,0 +1,373 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #f6f7ef;
+  background: #a7d3da;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+button {
+  font: inherit;
+}
+#app {
+  position: relative;
+}
+#scene,
+#scene canvas,
+.vignette,
+.start-screen,
+.start-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+#scene canvas {
+  display: block;
+}
+.vignette {
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 44, 53, 0.18),
+    transparent 30%,
+    transparent 68%,
+    rgba(11, 30, 39, 0.29)
+  );
+}
+.topbar {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 27px 42px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: #fff;
+  text-shadow: 0 1px 10px rgba(22, 50, 59, 0.3);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  letter-spacing: 0.13em;
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+  font-weight: 500;
+}
+.brand strong {
+  font-weight: 700;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+}
+.topbar-note {
+  font-weight: 700;
+  font-size: 10px;
+}
+.topbar-divider {
+  margin: 0 9px;
+  opacity: 0.6;
+}
+.hud {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+}
+.hud[hidden] {
+  display: none;
+}
+.objective {
+  position: absolute;
+  top: 100px;
+  left: 42px;
+  text-shadow: 0 1px 14px rgba(23, 52, 58, 0.35);
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+.eyebrow-line {
+  width: 28px;
+  height: 1px;
+  background: #fff;
+  opacity: 0.75;
+}
+.objective h1 {
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+  font-size: clamp(23px, 2.5vw, 34px);
+  letter-spacing: -0.045em;
+  margin: 10px 0 2px;
+  font-weight: 600;
+}
+.objective p {
+  font-size: 13px;
+  margin: 0;
+  color: #f1f8f4;
+}
+.throttle {
+  position: absolute;
+  top: 105px;
+  right: 42px;
+  width: 198px;
+  padding: 17px 18px;
+  background: rgba(13, 44, 52, 0.73);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 5px;
+  box-shadow: 0 12px 35px rgba(13, 48, 54, 0.12);
+  backdrop-filter: blur(10px);
+}
+.throttle-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+}
+.throttle-head strong {
+  font-size: 27px;
+  letter-spacing: -0.04em;
+  font-weight: 600;
+}
+.throttle-track {
+  height: 5px;
+  margin-top: 15px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+  border-radius: 6px;
+}
+.throttle-fill {
+  height: 100%;
+  width: 0%;
+  background: #ffe2a4;
+  border-radius: 6px;
+  transition: width 0.1s linear;
+}
+.throttle-hint {
+  display: block;
+  margin-top: 12px;
+  color: #d5e7e5;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.throttle-hint span,
+.flight-hint span {
+  padding: 0 4px;
+  opacity: 0.6;
+}
+.hud-footer {
+  position: absolute;
+  bottom: 33px;
+  left: 42px;
+  right: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-shadow: 0 1px 8px rgba(15, 43, 53, 0.3);
+}
+.flight-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffe5a7;
+  box-shadow: 0 0 0 4px rgba(255, 229, 167, 0.17);
+}
+.start-screen {
+  z-index: 4;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.start-screen[hidden] {
+  display: none;
+}
+.start-backdrop {
+  background: linear-gradient(
+    90deg,
+    rgba(18, 54, 59, 0.03) 10%,
+    rgba(18, 47, 53, 0.1) 45%,
+    rgba(12, 40, 47, 0.38) 100%
+  );
+}
+.start-card {
+  position: relative;
+  width: min(410px, calc(100vw - 40px));
+  margin-right: clamp(30px, 8vw, 142px);
+  padding: 30px 35px 28px;
+  background: #f5f3e9;
+  color: #20333a;
+  border-radius: 5px;
+  box-shadow: 0 22px 70px rgba(16, 48, 53, 0.22);
+}
+.card-topline {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #5e7577;
+}
+.card-rule {
+  height: 1px;
+  background: #ccd5cf;
+  margin: 20px 0 25px;
+}
+.intro-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.17em;
+  color: #358c88;
+  margin: 0 0 8px;
+}
+.start-card h1 {
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+  font-size: clamp(32px, 3vw, 43px);
+  line-height: 1.05;
+  letter-spacing: -0.06em;
+  margin: 0 0 15px;
+  font-weight: 600;
+}
+.intro-copy {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #52696b;
+  margin: 0 0 25px;
+}
+.controls-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #6a8280;
+  margin-bottom: 8px;
+}
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #dde2d8;
+  padding: 9px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #344d50;
+}
+.keycap {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid #c9d2ce;
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  color: #325458;
+  background: #fff;
+}
+.begin-button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 17px;
+  margin-top: 19px;
+  background: #e88854;
+  color: #fff;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+.begin-button:hover {
+  background: #d9723e;
+  transform: translateY(-2px);
+}
+.begin-button:focus-visible {
+  outline: 3px solid #317f84;
+  outline-offset: 3px;
+}
+.begin-button span {
+  font-size: 18px;
+  font-weight: 400;
+}
+.card-footnote {
+  text-align: center;
+  font-size: 10px;
+  color: #82918d;
+  margin: 14px 0 0;
+}
+@media (max-width: 700px) {
+  .topbar {
+    padding: 20px;
+  }
+  .topbar-note {
+    display: none;
+  }
+  .start-screen {
+    justify-content: center;
+  }
+  .start-card {
+    margin: 0;
+  }
+  .objective {
+    top: 76px;
+    left: 20px;
+  }
+  .throttle {
+    top: auto;
+    bottom: 80px;
+    right: 20px;
+  }
+  .hud-footer {
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+  }
+  .flight-hint {
+    display: none;
+  }
+}

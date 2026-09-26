@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#a7d3da" />
+    <title>Island Circuit</title>
+  </head>
+  <body>
+    <div id="app">
+      <div id="scene" aria-hidden="true"></div>
+      <div class="vignette" aria-hidden="true"></div>
+
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark">✦</span><span>ISLAND <strong>CIRCUIT</strong></span>
+        </div>
+        <span class="topbar-note"
+          >FLIGHT 01 <span class="topbar-divider">/</span> COASTAL RUNWAY</span
+        >
+      </header>
+
+      <main class="hud" id="hud" hidden>
+        <section class="objective" aria-label="Current objective">
+          <span class="eyebrow"
+            >CURRENT OBJECTIVE <span class="eyebrow-line"></span> RUNWAY START</span
+          >
+          <h1>Taxi along the runway</h1>
+          <p>Build speed and stay aligned for takeoff.</p>
+        </section>
+
+        <section class="throttle" aria-label="Throttle">
+          <div class="throttle-head">
+            <span>THROTTLE</span><strong id="throttle-value">0%</strong>
+          </div>
+          <div class="throttle-track"><div id="throttle-fill" class="throttle-fill"></div></div>
+          <span class="throttle-hint">SHIFT INCREASE <span>·</span> CTRL DECREASE</span>
+        </section>
+
+        <div class="hud-footer">
+          <span class="flight-status"><span class="status-dot"></span> ON GROUND</span>
+          <span class="flight-hint">A / D STEER <span>·</span> SPACE BRAKE</span>
+        </div>
+      </main>
+
+      <div class="start-screen" id="start-screen">
+        <div class="start-backdrop"></div>
+        <section class="start-card" aria-labelledby="start-heading">
+          <div class="card-topline"><span>FLIGHT BRIEFING</span><span>RUNWAY START</span></div>
+          <div class="card-rule"></div>
+          <p class="intro-tag">WELCOME TO THE ISLAND</p>
+          <h1 id="start-heading">The runway is yours.</h1>
+          <p class="intro-copy">
+            Take the controls of a small jet on a quiet coastal airstrip. Start with a ground roll
+            and get a feel for the aircraft.
+          </p>
+
+          <div class="controls-title">GROUND CONTROLS</div>
+          <div class="control-row">
+            <span>Increase throttle</span><span class="keycap">SHIFT</span>
+          </div>
+          <div class="control-row">
+            <span>Decrease throttle</span><span class="keycap">CTRL</span>
+          </div>
+          <div class="control-row">
+            <span>Steer left / right</span
+            ><span><span class="keycap">A</span> <span class="keycap">D</span></span>
+          </div>
+          <div class="control-row"><span>Brake</span><span class="keycap">SPACE</span></div>
+
+          <button id="begin-button" class="begin-button" type="button">
+            Begin flight <span>↗</span>
+          </button>
+          <p class="card-footnote">Desktop Chrome · Keyboard controls</p>
+        </section>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
