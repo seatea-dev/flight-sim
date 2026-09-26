@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GameAudio } from './audio';
 import { keyboardInput } from './controls';
 import { DISTANT_RETURN_RADIUS } from './route';
 import { GameSession, type FlightState } from './session';
@@ -8,6 +9,10 @@ import './style.css';
 const sceneElement = document.querySelector<HTMLElement>('#scene')!;
 const startScreen = document.querySelector<HTMLElement>('#start-screen')!;
 const beginButton = document.querySelector<HTMLButtonElement>('#begin-button')!;
+const pauseScreen = document.querySelector<HTMLElement>('#pause-screen')!;
+const resumeButton = document.querySelector<HTMLButtonElement>('#resume-button')!;
+const soundStatus = document.querySelector<HTMLElement>('#sound-status')!;
+const pauseSoundStatus = document.querySelector<HTMLElement>('#pause-sound-status')!;
 const hud = document.querySelector<HTMLElement>('#hud')!;
 const throttleValue = document.querySelector<HTMLElement>('#throttle-value')!;
 const throttleFill = document.querySelector<HTMLElement>('#throttle-fill')!;
@@ -27,6 +32,7 @@ const resultTitle = document.querySelector<HTMLElement>('#result-title')!;
 const resultDetail = document.querySelector<HTMLElement>('#result-detail')!;
 
 const session = new GameSession();
+const audio = new GameAudio();
 const heldKeys = new Set<string>();
 const { scene, renderer, camera, jet, gear, ocean } = createWorld(sceneElement);
 const initialPose = cameraPose(session.state);
@@ -52,14 +58,49 @@ function cameraPose(state: FlightState) {
 
 beginButton.addEventListener('click', () => {
   session.begin();
+  audio.start();
   startScreen.hidden = true;
   hud.hidden = false;
   heldKeys.clear();
   beginButton.blur();
 });
 
+function showSoundState() {
+  soundStatus.textContent = audio.isMuted ? 'SOUND OFF' : 'SOUND ON';
+  pauseSoundStatus.textContent = audio.isMuted ? 'Sound off' : 'Sound on';
+}
+
+function resumeFlight() {
+  session.resume();
+  pauseScreen.hidden = true;
+  heldKeys.clear();
+  resumeButton.blur();
+}
+
+resumeButton.addEventListener('click', resumeFlight);
+
 window.addEventListener('keydown', (event) => {
-  if (event.code === 'Space') event.preventDefault();
+  if (event.code === 'Space' || event.code === 'Escape') event.preventDefault();
+  if (event.code === 'KeyM') {
+    if (!event.repeat) {
+      audio.toggleMute();
+      showSoundState();
+    }
+    return;
+  }
+  if (event.code === 'Escape') {
+    if (session.state.started && !session.state.result && !event.repeat) {
+      if (session.state.paused) {
+        resumeFlight();
+      } else {
+        session.pause();
+        heldKeys.clear();
+        pauseScreen.hidden = false;
+        resumeButton.focus();
+      }
+    }
+    return;
+  }
   if (event.code === 'KeyR' && session.state.started && !event.repeat) {
     session.restart();
     heldKeys.clear();
@@ -68,9 +109,12 @@ window.addEventListener('keydown', (event) => {
     cameraTarget.copy(pose.target);
     camera.lookAt(cameraTarget);
     resultScreen.hidden = true;
+    pauseScreen.hidden = true;
+    resumeButton.blur();
     return;
   }
-  heldKeys.add(event.code);
+  if (session.state.started && !session.state.paused && !session.state.result)
+    heldKeys.add(event.code);
 });
 window.addEventListener('keyup', (event) => heldKeys.delete(event.code));
 window.addEventListener('blur', () => heldKeys.clear());
@@ -86,7 +130,11 @@ window.addEventListener('resize', () => {
 renderer.setAnimationLoop((time) => {
   const elapsedSeconds = previousTime ? Math.min((time - previousTime) / 1000, 0.05) : 0;
   previousTime = time;
+  const previousState = session.state;
   const state = session.update(keyboardInput(heldKeys), elapsedSeconds);
+  audio.update(state);
+  if (state.landmarkPasses > previousState.landmarkPasses) audio.cue('landmark');
+  if (state.result && !previousState.result) audio.cue(state.result);
   ocean.position.x = state.x;
   ocean.position.z = state.z;
   jet.position.set(state.x, 2.65 + state.altitude, state.z);
