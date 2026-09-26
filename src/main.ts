@@ -21,6 +21,10 @@ const returnCue = document.querySelector<HTMLElement>('#return-cue')!;
 const returnArrow = document.querySelector<HTMLElement>('#return-arrow')!;
 const flightStatus = document.querySelector<HTMLElement>('#flight-status')!;
 const flightHint = document.querySelector<HTMLElement>('#flight-hint')!;
+const resultScreen = document.querySelector<HTMLElement>('#result-screen')!;
+const resultLabel = document.querySelector<HTMLElement>('#result-label')!;
+const resultTitle = document.querySelector<HTMLElement>('#result-title')!;
+const resultDetail = document.querySelector<HTMLElement>('#result-detail')!;
 
 const session = new GameSession();
 const heldKeys = new Set<string>();
@@ -56,6 +60,16 @@ beginButton.addEventListener('click', () => {
 
 window.addEventListener('keydown', (event) => {
   if (event.code === 'Space') event.preventDefault();
+  if (event.code === 'KeyR' && session.state.started && !event.repeat) {
+    session.restart();
+    heldKeys.clear();
+    const pose = cameraPose(session.state);
+    camera.position.copy(pose.position);
+    cameraTarget.copy(pose.target);
+    camera.lookAt(cameraTarget);
+    resultScreen.hidden = true;
+    return;
+  }
   heldKeys.add(event.code);
 });
 window.addEventListener('keyup', (event) => heldKeys.delete(event.code));
@@ -99,14 +113,16 @@ renderer.setAnimationLoop((time) => {
       : state.objective === 'return'
         ? 'RETURN LEG'
         : 'LIGHTHOUSE ROUTE';
-  objectiveTitle.textContent =
-    state.objective === 'takeoff'
+  objectiveTitle.textContent = state.landingPending
+    ? 'Brake to stop'
+    : state.objective === 'takeoff'
       ? 'Take off from the runway'
       : state.objective === 'return'
         ? 'Return to the runway'
         : 'Fly past the lighthouse';
-  objectiveDetail.textContent =
-    state.objective === 'takeoff'
+  objectiveDetail.textContent = state.landingPending
+    ? 'Touchdown. Brake to finish the circuit.'
+    : state.objective === 'takeoff'
       ? 'Build speed, then hold S to raise the nose.'
       : state.objective === 'return'
         ? 'Use the runway cue to turn back toward the island.'
@@ -114,7 +130,7 @@ renderer.setAnimationLoop((time) => {
           ? 'Far from the island. Follow the runway cue to return.'
           : 'Look for the striped lighthouse beyond the north shore.';
   landmarkNotice.hidden = state.landmarkNoticeSeconds <= 0;
-  returnCue.hidden = state.runwayBearing === null;
+  returnCue.hidden = state.runwayBearing === null || state.landingPending || !!state.result;
   if (state.runwayBearing !== null) {
     returnArrow.style.transform = `rotate(${state.runwayBearing}rad)`;
   }
@@ -123,6 +139,26 @@ renderer.setAnimationLoop((time) => {
       ? 'LOW AIRSPEED'
       : 'AIRBORNE'
     : 'ON GROUND';
+  resultScreen.hidden = state.result === null;
+  if (state.result) {
+    resultLabel.textContent = state.result === 'crash' ? 'FLIGHT ENDED' : 'CIRCUIT RESULT';
+    resultTitle.textContent =
+      state.result === 'complete'
+        ? 'Circuit complete'
+        : state.result === 'incomplete'
+          ? 'Incomplete circuit'
+          : 'Crash';
+    resultDetail.textContent =
+      state.result === 'complete'
+        ? 'You passed the lighthouse and stopped on the runway.'
+        : state.result === 'incomplete'
+          ? 'You landed safely, but missed the lighthouse.'
+          : state.crashReason === 'hard landing'
+            ? 'The touchdown was too fast, steep, or misaligned.'
+            : state.crashReason === 'off runway'
+              ? 'The jet touched down outside the runway.'
+              : `The jet hit ${state.crashReason === 'structure' ? 'a structure' : state.crashReason === 'water' ? 'the water' : 'the terrain'}.`;
+  }
   flightHint.textContent = state.airborne
     ? 'W NOSE DOWN · S NOSE UP · A / D BANK · Q / E YAW'
     : 'A / D STEER · SPACE BRAKE';

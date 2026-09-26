@@ -65,6 +65,15 @@
         </div>
       </main>
 
+      <div class="result-screen" id="result-screen" hidden>
+        <section class="result-card" role="status" aria-labelledby="result-title">
+          <span class="result-eyebrow" id="result-label">CIRCUIT RESULT</span>
+          <h2 id="result-title"></h2>
+          <p id="result-detail"></p>
+          <p class="result-restart">Press <span class="keycap">R</span> to restart at the runway</p>
+        </section>
+      </div>
+
       <div class="start-screen" id="start-screen">
         <div class="start-backdrop"></div>
         <section class="start-card" aria-labelledby="start-heading">
@@ -97,6 +106,7 @@
             ><span><span class="keycap">Q</span> <span class="keycap">E</span></span>
           </div>
           <div class="control-row"><span>Brake</span><span class="keycap">SPACE</span></div>
+          <div class="control-row"><span>Restart</span><span class="keycap">R</span></div>
 
           <button id="begin-button" class="begin-button" type="button">
             Begin flight <span>↗</span>
