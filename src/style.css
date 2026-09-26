@@ -143,6 +143,37 @@ button {
   box-shadow: 0 12px 35px rgba(13, 48, 54, 0.12);
   backdrop-filter: blur(10px);
 }
+.instrument-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+.instrument-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.instrument-row > div > span {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #d5e7e5;
+}
+.instrument-row strong {
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+  font-size: 27px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.instrument-row small {
+  margin-left: 3px;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  color: #d5e7e5;
+}
 .throttle-head {
   display: flex;
   justify-content: space-between;

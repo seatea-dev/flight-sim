@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GameSession, type GroundInput, type GroundState } from './session';
+import { GameSession, type FlightInput, type FlightState } from './session';
 import { createWorld } from './world';
 import './style.css';
 
@@ -9,37 +9,48 @@ const beginButton = document.querySelector<HTMLButtonElement>('#begin-button')!;
 const hud = document.querySelector<HTMLElement>('#hud')!;
 const throttleValue = document.querySelector<HTMLElement>('#throttle-value')!;
 const throttleFill = document.querySelector<HTMLElement>('#throttle-fill')!;
+const airspeedValue = document.querySelector<HTMLElement>('#airspeed-value')!;
+const altitudeValue = document.querySelector<HTMLElement>('#altitude-value')!;
+const objectiveLabel = document.querySelector<HTMLElement>('#objective-label')!;
+const objectiveTitle = document.querySelector<HTMLElement>('#objective-title')!;
+const objectiveDetail = document.querySelector<HTMLElement>('#objective-detail')!;
+const flightStatus = document.querySelector<HTMLElement>('#flight-status')!;
+const flightHint = document.querySelector<HTMLElement>('#flight-hint')!;
 
 const session = new GameSession();
 const heldKeys = new Set<string>();
-const { scene, renderer, camera, jet } = createWorld(sceneElement);
+const { scene, renderer, camera, jet, gear } = createWorld(sceneElement);
 const initialPose = cameraPose(session.state);
 const cameraTarget = initialPose.target;
 camera.position.copy(initialPose.position);
 camera.lookAt(cameraTarget);
 let previousTime = 0;
 
-function cameraPose(state: GroundState) {
+function cameraPose(state: FlightState) {
   return {
     position: new THREE.Vector3(
       state.x - Math.sin(state.heading) * 28,
-      11.65,
+      state.altitude + 11.65,
       state.z + Math.cos(state.heading) * 28,
     ),
     target: new THREE.Vector3(
       state.x + Math.sin(state.heading) * 22,
-      3.5,
+      state.altitude + 3.5,
       state.z - Math.cos(state.heading) * 22,
     ),
   };
 }
 
-function groundInput(): GroundInput {
+function flightInput(): FlightInput {
   return {
     throttleUp: heldKeys.has('ShiftLeft') || heldKeys.has('ShiftRight'),
     throttleDown: heldKeys.has('ControlLeft') || heldKeys.has('ControlRight'),
     steerLeft: heldKeys.has('KeyA'),
     steerRight: heldKeys.has('KeyD'),
+    pitchUp: heldKeys.has('KeyW'),
+    pitchDown: heldKeys.has('KeyS'),
+    yawLeft: heldKeys.has('KeyQ'),
+    yawRight: heldKeys.has('KeyE'),
     brake: heldKeys.has('Space'),
   };
 }
@@ -70,9 +81,13 @@ window.addEventListener('resize', () => {
 renderer.setAnimationLoop((time) => {
   const elapsedSeconds = previousTime ? Math.min((time - previousTime) / 1000, 0.05) : 0;
   previousTime = time;
-  const state = session.update(groundInput(), elapsedSeconds);
-  jet.position.set(state.x, 2.65, state.z);
+  const state = session.update(flightInput(), elapsedSeconds);
+  jet.position.set(state.x, 2.65 + state.altitude, state.z);
+  jet.rotation.order = 'YXZ';
   jet.rotation.y = -state.heading;
+  jet.rotation.x = state.pitch;
+  jet.rotation.z = -state.bank;
+  gear.visible = state.gearDown;
 
   const desiredPose = cameraPose(state);
   const smoothing = 1 - Math.exp(-3.5 * elapsedSeconds);
@@ -83,5 +98,22 @@ renderer.setAnimationLoop((time) => {
   const percent = Math.round(state.throttle * 100);
   throttleValue.textContent = `${percent}%`;
   throttleFill.style.width = `${percent}%`;
+  airspeedValue.textContent = `${Math.round(state.speed * 3.6)}`;
+  altitudeValue.textContent = `${Math.round(state.altitude)}`;
+  objectiveLabel.textContent = state.objective === 'takeoff' ? 'RUNWAY START' : 'FREE FLIGHT';
+  objectiveTitle.textContent =
+    state.objective === 'takeoff' ? 'Take off from the runway' : 'Fly the coast';
+  objectiveDetail.textContent =
+    state.objective === 'takeoff'
+      ? 'Build speed, then hold W to raise the nose.'
+      : 'Use W / S to pitch, A / D to bank, and Q / E to yaw.';
+  flightStatus.textContent = state.airborne
+    ? state.speed < 23
+      ? 'LOW AIRSPEED'
+      : 'AIRBORNE'
+    : 'ON GROUND';
+  flightHint.textContent = state.airborne
+    ? 'W / S PITCH · A / D BANK · Q / E YAW'
+    : 'A / D STEER · SPACE BRAKE';
   renderer.render(scene, camera);
 });

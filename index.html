@@ -23,13 +23,24 @@
       <main class="hud" id="hud" hidden>
         <section class="objective" aria-label="Current objective">
           <span class="eyebrow"
-            >CURRENT OBJECTIVE <span class="eyebrow-line"></span> RUNWAY START</span
+            >CURRENT OBJECTIVE <span class="eyebrow-line"></span>
+            <span id="objective-label">RUNWAY START</span></span
           >
-          <h1>Taxi along the runway</h1>
-          <p>Build speed and stay aligned for takeoff.</p>
+          <h1 id="objective-title">Take off from the runway</h1>
+          <p id="objective-detail">Build speed, then hold W to raise the nose.</p>
         </section>
 
-        <section class="throttle" aria-label="Throttle">
+        <section class="throttle" aria-label="Flight instruments">
+          <div class="instrument-row">
+            <div>
+              <span>AIRSPEED</span
+              ><strong><span id="airspeed-value">0</span><small>KM/H</small></strong>
+            </div>
+            <div>
+              <span>ALTITUDE</span
+              ><strong><span id="altitude-value">0</span><small>M</small></strong>
+            </div>
+          </div>
           <div class="throttle-head">
             <span>THROTTLE</span><strong id="throttle-value">0%</strong>
           </div>
@@ -38,8 +49,10 @@
         </section>
 
         <div class="hud-footer">
-          <span class="flight-status"><span class="status-dot"></span> ON GROUND</span>
-          <span class="flight-hint">A / D STEER <span>·</span> SPACE BRAKE</span>
+          <span class="flight-status"
+            ><span class="status-dot"></span> <span id="flight-status">ON GROUND</span></span
+          >
+          <span class="flight-hint" id="flight-hint">A / D STEER · SPACE BRAKE</span>
         </div>
       </main>
 
@@ -52,10 +65,10 @@
           <h1 id="start-heading">The runway is yours.</h1>
           <p class="intro-copy">
             Take the controls of a small jet on a quiet coastal airstrip. Start with a ground roll
-            and get a feel for the aircraft.
+            and lift off into a short free flight.
           </p>
 
-          <div class="controls-title">GROUND CONTROLS</div>
+          <div class="controls-title">FLIGHT CONTROLS</div>
           <div class="control-row">
             <span>Increase throttle</span><span class="keycap">SHIFT</span>
           </div>
@@ -63,8 +76,16 @@
             <span>Decrease throttle</span><span class="keycap">CTRL</span>
           </div>
           <div class="control-row">
-            <span>Steer left / right</span
+            <span>Steer / bank left or right</span
             ><span><span class="keycap">A</span> <span class="keycap">D</span></span>
+          </div>
+          <div class="control-row">
+            <span>Raise / lower nose</span
+            ><span><span class="keycap">W</span> <span class="keycap">S</span></span>
+          </div>
+          <div class="control-row">
+            <span>Yaw left / right</span
+            ><span><span class="keycap">Q</span> <span class="keycap">E</span></span>
           </div>
           <div class="control-row"><span>Brake</span><span class="keycap">SPACE</span></div>
 

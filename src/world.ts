@@ -31,8 +31,10 @@ function wing(points: [number, number][], color: number, height: number): THREE.
   return mesh;
 }
 
-function makeJet(): THREE.Group {
+function makeJet() {
   const jet = new THREE.Group();
+  const gear = new THREE.Group();
+  jet.add(gear);
   const ivory = new THREE.MeshStandardMaterial({
     color: 0xe5e4d8,
     metalness: 0.25,
@@ -154,11 +156,11 @@ function makeJet(): THREE.Group {
     wheel.rotation.z = Math.PI / 2;
     wheel.position.set(x, -1.85, z);
     wheel.castShadow = true;
-    jet.add(wheel);
+    gear.add(wheel);
   }
 
   jet.position.y = 2.65;
-  return jet;
+  return { jet, gear };
 }
 
 export function createWorld(container: HTMLElement) {
@@ -229,7 +231,7 @@ export function createWorld(container: HTMLElement) {
     }
   }
 
-  const jet = makeJet();
+  const { jet, gear } = makeJet();
   scene.add(jet);
   const camera = new THREE.PerspectiveCamera(
     58,
@@ -237,5 +239,5 @@ export function createWorld(container: HTMLElement) {
     0.1,
     2500,
   );
-  return { scene, renderer, camera, jet };
+  return { scene, renderer, camera, jet, gear };
 }
