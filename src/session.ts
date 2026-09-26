@@ -1,3 +1,5 @@
+import { DISTANT_RETURN_RADIUS, LANDMARK_RADIUS, LIGHTHOUSE, RUNWAY } from './route';
+
 export type FlightInput = {
   throttleUp?: boolean;
   throttleDown?: boolean;
@@ -23,7 +25,12 @@ export type FlightState = Readonly<{
   throttle: number;
   airborne: boolean;
   gearDown: boolean;
-  objective: 'takeoff' | 'fly';
+  objective: 'takeoff' | 'fly' | 'return';
+  landmarkPassed: boolean;
+  landmarkPasses: number;
+  landmarkNoticeSeconds: number;
+  distanceFromRunway: number;
+  runwayBearing: number | null;
 }>;
 
 const initialState: FlightState = {
@@ -40,6 +47,11 @@ const initialState: FlightState = {
   airborne: false,
   gearDown: true,
   objective: 'takeoff',
+  landmarkPassed: false,
+  landmarkPasses: 0,
+  landmarkNoticeSeconds: 0,
+  distanceFromRunway: 170,
+  runwayBearing: null,
 };
 
 const tuning = {
@@ -78,6 +90,7 @@ export class GameSession {
     while (remaining > 0) {
       const step = Math.min(remaining, 1 / 60);
       this.advance(input, step);
+      this.updateRoute(step);
       remaining -= step;
     }
     return this.state;
@@ -122,7 +135,7 @@ export class GameSession {
         verticalSpeed: airborne ? 1.5 : 0,
         airborne,
         gearDown: true,
-        objective: airborne ? 'fly' : previous.objective,
+        objective: airborne ? (previous.landmarkPassed ? 'return' : 'fly') : previous.objective,
       };
       return;
     }
@@ -163,7 +176,29 @@ export class GameSession {
       throttle,
       airborne,
       gearDown: altitude < 8,
-      objective: 'fly',
+      objective: previous.landmarkPassed ? 'return' : 'fly',
+    };
+  }
+
+  private updateRoute(dt: number): void {
+    const state = this.current;
+    const landmarkDistance = Math.hypot(state.x - LIGHTHOUSE.x, state.z - LIGHTHOUSE.z);
+    const passed = state.landmarkPassed || (state.airborne && landmarkDistance <= LANDMARK_RADIUS);
+    const newlyPassed = passed && !state.landmarkPassed;
+    const distanceFromRunway = Math.hypot(state.x - RUNWAY.x, state.z - RUNWAY.z);
+    const showRunwayBearing = passed || distanceFromRunway > DISTANT_RETURN_RADIUS;
+    const targetHeading = Math.atan2(RUNWAY.x - state.x, state.z - RUNWAY.z);
+    const relativeHeading = targetHeading - state.heading;
+    this.current = {
+      ...state,
+      objective: newlyPassed ? 'return' : state.objective,
+      landmarkPassed: passed,
+      landmarkPasses: state.landmarkPasses + Number(newlyPassed),
+      landmarkNoticeSeconds: newlyPassed ? 4 : Math.max(0, state.landmarkNoticeSeconds - dt),
+      distanceFromRunway,
+      runwayBearing: showRunwayBearing
+        ? Math.atan2(Math.sin(relativeHeading), Math.cos(relativeHeading))
+        : null,
     };
   }
 }

@@ -1,4 +1,151 @@
 import * as THREE from 'three';
+import { LIGHTHOUSE } from './route';
+
+const material = (color: number) =>
+  new THREE.MeshStandardMaterial({ color, roughness: 1, flatShading: true });
+
+function coastLayer(radius: number, top: number, bottom: number, color: number) {
+  const points: number[] = [];
+  const segments = 48;
+  const shoreline = (angle: number) =>
+    radius * (1 + 0.035 * Math.sin(angle * 5) + 0.025 * Math.cos(angle * 9));
+  for (let i = 0; i < segments; i++) {
+    const a = (i / segments) * Math.PI * 2;
+    const b = ((i + 1) / segments) * Math.PI * 2;
+    const ax = Math.sin(a) * shoreline(a);
+    const az = Math.cos(a) * shoreline(a);
+    const bx = Math.sin(b) * shoreline(b);
+    const bz = Math.cos(b) * shoreline(b);
+    points.push(0, top, 0, ax, top, az, bx, top, bz);
+    points.push(ax, top, az, ax, bottom, az, bx, top, bz);
+    points.push(bx, top, bz, ax, bottom, az, bx, bottom, bz);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+  geometry.computeVertexNormals();
+  const mesh = new THREE.Mesh(geometry, material(color));
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+function addTree(scene: THREE.Scene, x: number, z: number, scale = 1) {
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.2, 7, 5), material(0x705c43));
+  trunk.position.set(x, 3.5, z);
+  const crown = new THREE.Mesh(
+    new THREE.ConeGeometry(7 * scale, 18 * scale, 6),
+    material(0x426c5e),
+  );
+  crown.position.set(x, 14 * scale, z);
+  crown.castShadow = true;
+  scene.add(trunk, crown);
+}
+
+function addBuilding(scene: THREE.Scene, x: number, z: number, width: number, depth: number) {
+  const walls = new THREE.Mesh(new THREE.BoxGeometry(width, 11, depth), material(0xd6d0b8));
+  walls.position.set(x, 5.5, z);
+  walls.castShadow = true;
+  const roof = new THREE.Mesh(
+    new THREE.ConeGeometry(Math.max(width, depth) * 0.78, 6, 4),
+    material(0xb46e54),
+  );
+  roof.rotation.y = Math.PI / 4;
+  roof.position.set(x, 14, z);
+  roof.castShadow = true;
+  scene.add(walls, roof);
+}
+
+function addScenery(scene: THREE.Scene) {
+  const hillColors = [0x78956d, 0x6f8d68, 0x8aa073];
+  for (const [x, z, radius, height, shade] of [
+    [-335, -230, 125, 41, 0],
+    [-350, 120, 150, 34, 1],
+    [320, -125, 135, 29, 2],
+    [345, 295, 120, 36, 0],
+    [-105, 410, 110, 20, 2],
+  ]) {
+    const hill = new THREE.Mesh(
+      new THREE.ConeGeometry(radius, height, 7),
+      material(hillColors[shade]),
+    );
+    hill.position.set(x, height / 2 - 1, z);
+    hill.receiveShadow = true;
+    hill.castShadow = true;
+    scene.add(hill);
+  }
+
+  for (const [x, z, scale] of [
+    [-180, -270, 1],
+    [-245, -275, 0.85],
+    [-180, -195, 0.9],
+    [-240, -90, 1.1],
+    [-160, 40, 0.9],
+    [-250, 65, 1.1],
+    [-260, 225, 1],
+    [-160, 310, 0.8],
+    [-65, 390, 0.85],
+    [195, -305, 0.9],
+    [265, -250, 1],
+    [245, -25, 0.85],
+    [175, 90, 0.9],
+    [280, 115, 1.1],
+    [220, 240, 0.85],
+    [135, 375, 0.9],
+    [330, 350, 0.8],
+  ])
+    addTree(scene, x, z, scale);
+
+  addBuilding(scene, -88, 35, 30, 22);
+  addBuilding(scene, -110, 86, 19, 18);
+  addBuilding(scene, 95, 140, 25, 20);
+
+  const rock = material(0x737c73);
+  const paleRock = material(0x9d9e86);
+  for (const [x, z, radius, height] of [
+    [45, -525, 72, 19],
+    [75, -575, 65, 25],
+    [LIGHTHOUSE.x, LIGHTHOUSE.z, 68, 30],
+    [145, -605, 25, 17],
+    [18, -630, 22, 14],
+  ]) {
+    const outcrop = new THREE.Mesh(
+      new THREE.CylinderGeometry(radius * 0.72, radius, height, 7),
+      radius > 50 ? rock : paleRock,
+    );
+    outcrop.position.set(x, height / 2 - 3, z);
+    outcrop.castShadow = true;
+    outcrop.receiveShadow = true;
+    scene.add(outcrop);
+  }
+
+  const lighthouse = new THREE.Group();
+  lighthouse.position.set(LIGHTHOUSE.x, 28, LIGHTHOUSE.z);
+  const white = material(0xf4eddb);
+  const red = material(0xc95d4d);
+  const lantern = new THREE.MeshStandardMaterial({
+    color: 0xffedb2,
+    emissive: 0xffc971,
+    emissiveIntensity: 1.8,
+    roughness: 0.3,
+  });
+  for (let band = 0; band < 5; band++) {
+    const towerBand = new THREE.Mesh(
+      new THREE.CylinderGeometry(5.5 - band * 0.48, 6 - band * 0.48, 8, 10),
+      band % 2 ? red : white,
+    );
+    towerBand.position.y = 4 + band * 8;
+    towerBand.castShadow = true;
+    lighthouse.add(towerBand);
+  }
+  const gallery = new THREE.Mesh(new THREE.CylinderGeometry(6.4, 6.4, 2, 12), red);
+  gallery.position.y = 41;
+  const beacon = new THREE.Mesh(new THREE.CylinderGeometry(4.6, 4.6, 8, 10), lantern);
+  beacon.position.y = 46;
+  const cap = new THREE.Mesh(new THREE.ConeGeometry(6.3, 5, 10), red);
+  cap.position.y = 53;
+  cap.castShadow = true;
+  lighthouse.add(gallery, beacon, cap);
+  scene.add(lighthouse);
+}
 
 function groundPlane(width: number, length: number, color: number, height: number): THREE.Mesh {
   const mesh = new THREE.Mesh(
@@ -166,7 +313,7 @@ function makeJet() {
 export function createWorld(container: HTMLElement) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xa8d2d8);
-  scene.fog = new THREE.Fog(0xa8d2d8, 700, 1900);
+  scene.fog = new THREE.Fog(0xa8d2d8, 850, 2200);
 
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -194,21 +341,12 @@ export function createWorld(container: HTMLElement) {
   sun.shadow.camera.far = 650;
   scene.add(sun);
 
-  scene.add(groundPlane(4000, 4000, 0x3a8ca4, -4.2));
-  const sand = new THREE.Mesh(
-    new THREE.CylinderGeometry(590, 620, 9, 48),
-    new THREE.MeshStandardMaterial({ color: 0xd9c99d, roughness: 1, flatShading: true }),
-  );
-  sand.position.y = -5.9;
-  sand.receiveShadow = true;
-  scene.add(sand);
-  const grass = new THREE.Mesh(
-    new THREE.CylinderGeometry(560, 585, 8, 48),
-    new THREE.MeshStandardMaterial({ color: 0x839f72, roughness: 1, flatShading: true }),
-  );
-  grass.position.y = -3.9;
-  grass.receiveShadow = true;
-  scene.add(grass);
+  const ocean = groundPlane(4000, 4000, 0x3a8ca4, -4.2);
+  scene.add(ocean);
+  scene.add(coastLayer(610, -1.4, -5.5, 0xd9c99d));
+  scene.add(coastLayer(560, 0.1, -2, 0x839f72));
+
+  addScenery(scene);
 
   scene.add(groundPlane(52, 540, 0xbaa984, 0.16));
   scene.add(groundPlane(38, 520, 0x39484a, 0.18));
@@ -239,5 +377,5 @@ export function createWorld(container: HTMLElement) {
     0.1,
     2500,
   );
-  return { scene, renderer, camera, jet, gear };
+  return { scene, renderer, camera, jet, gear, ocean };
 }
