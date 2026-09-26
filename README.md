@@ -1,10 +1,26 @@
 # Island Circuit
 
-A small browser flight simulator, built one playable slice at a time. Take off from the coastal runway, pass the lighthouse on the north point, and follow the runway cue back toward the island.
+**[▶ Play Island Circuit](https://seatea-dev.github.io/flight-sim/)**
 
-Hold Shift to increase throttle, then hold S during the ground roll to raise the nose and take off. In the air, W lowers the nose and S raises it. A and D bank, and Q and E yaw. Ctrl reduces throttle. On the ground, A and D steer and Space brakes. Landing gear moves automatically.
+Island Circuit is a small browser based 3D flight simulator set around a coastal island. Take off from the runway, pass the lighthouse, then follow the runway cue back to land.
 
-Press Esc to pause or resume and review the controls. Press M to mute or unmute sound, and R to restart at the runway.
+Built with TypeScript, Vite, and Three.js.
+
+## Controls
+
+| Key   | Action                               |
+| ----- | ------------------------------------ |
+| Shift | Increase throttle                    |
+| Ctrl  | Reduce throttle                      |
+| W / S | Lower / raise the nose               |
+| A / D | Bank in the air, steer on the ground |
+| Q / E | Yaw left / right                     |
+| Space | Brake on the ground                  |
+| Esc   | Pause or resume                      |
+| M     | Mute or unmute sound                 |
+| R     | Restart at the runway                |
+
+Landing gear moves automatically.
 
 ## Run locally
 
@@ -17,7 +33,7 @@ npm run dev
 
 Open the local address printed by Vite in desktop Chrome.
 
-## Check the build
+## Check the project
 
 ```sh
 npm test
@@ -25,5 +41,3 @@ npm run typecheck
 npm run format:check
 npm run build
 ```
-
-The build command writes static assets to `dist/`.
