@@ -16,7 +16,8 @@
           <span class="brand-mark">✦</span><span>ISLAND <strong>CIRCUIT</strong></span>
         </div>
         <span class="topbar-note"
-          >FLIGHT 01 <span class="topbar-divider">/</span> COASTAL RUNWAY</span
+          >FLIGHT 01 <span class="topbar-divider">/</span> COASTAL RUNWAY
+          <span class="topbar-divider">/</span> <span id="sound-status">SOUND ON</span></span
         >
       </header>
 
@@ -74,6 +75,39 @@
         </section>
       </div>
 
+      <div class="pause-screen" id="pause-screen" hidden>
+        <section class="pause-card" role="dialog" aria-modal="true" aria-labelledby="pause-heading">
+          <div class="card-topline"><span>FLIGHT PAUSED</span><span>CONTROLS</span></div>
+          <div class="card-rule"></div>
+          <h2 id="pause-heading">Take a breather.</h2>
+          <div class="controls-title">FLIGHT CONTROLS</div>
+          <div class="control-row">
+            <span>Increase / decrease throttle</span
+            ><span><span class="keycap">SHIFT</span> <span class="keycap">CTRL</span></span>
+          </div>
+          <div class="control-row">
+            <span>Steer / bank left or right</span
+            ><span><span class="keycap">A</span> <span class="keycap">D</span></span>
+          </div>
+          <div class="control-row">
+            <span>Lower / raise nose</span
+            ><span><span class="keycap">W</span> <span class="keycap">S</span></span>
+          </div>
+          <div class="control-row">
+            <span>Yaw left / right</span
+            ><span><span class="keycap">Q</span> <span class="keycap">E</span></span>
+          </div>
+          <div class="control-row"><span>Brake</span><span class="keycap">SPACE</span></div>
+          <div class="control-row"><span>Pause / resume</span><span class="keycap">ESC</span></div>
+          <div class="control-row"><span>Restart</span><span class="keycap">R</span></div>
+          <div class="control-row"><span>Mute / unmute</span><span class="keycap">M</span></div>
+          <button id="resume-button" class="begin-button" type="button">
+            Resume flight <span>↗</span>
+          </button>
+          <p class="card-footnote" id="pause-sound-status">Sound on</p>
+        </section>
+      </div>
+
       <div class="start-screen" id="start-screen">
         <div class="start-backdrop"></div>
         <section class="start-card" aria-labelledby="start-heading">
@@ -106,7 +140,9 @@
             ><span><span class="keycap">Q</span> <span class="keycap">E</span></span>
           </div>
           <div class="control-row"><span>Brake</span><span class="keycap">SPACE</span></div>
+          <div class="control-row"><span>Pause / resume</span><span class="keycap">ESC</span></div>
           <div class="control-row"><span>Restart</span><span class="keycap">R</span></div>
+          <div class="control-row"><span>Mute / unmute</span><span class="keycap">M</span></div>
 
           <button id="begin-button" class="begin-button" type="button">
             Begin flight <span>↗</span>

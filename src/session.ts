@@ -26,6 +26,7 @@ export type FlightInput = {
 
 export type FlightState = Readonly<{
   started: boolean;
+  paused: boolean;
   x: number;
   z: number;
   altitude: number;
@@ -50,6 +51,7 @@ export type FlightState = Readonly<{
 
 const initialState: FlightState = {
   started: false,
+  paused: false,
   x: 0,
   z: 170,
   altitude: 0,
@@ -137,13 +139,26 @@ export class GameSession {
     return this.state;
   }
 
+  pause(): FlightState {
+    if (this.current.started && !this.current.result) {
+      this.current = { ...this.current, paused: true };
+    }
+    return this.state;
+  }
+
+  resume(): FlightState {
+    this.current = { ...this.current, paused: false };
+    return this.state;
+  }
+
   restart(): FlightState {
     this.current = { ...initialState, started: true };
     return this.state;
   }
 
   update(input: FlightInput, elapsedSeconds: number): FlightState {
-    if (!this.current.started || this.current.result || elapsedSeconds <= 0) return this.state;
+    if (!this.current.started || this.current.paused || this.current.result || elapsedSeconds <= 0)
+      return this.state;
 
     let remaining = elapsedSeconds;
     while (remaining > 0) {

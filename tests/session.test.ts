@@ -2,6 +2,39 @@ import { describe, expect, it } from 'vitest';
 import { GameSession } from '../src/session';
 
 describe('runway start', () => {
+  it('freezes the jet and circuit while paused, then resumes from the same state', () => {
+    const session = new GameSession();
+    session.begin();
+    session.update({ throttleUp: true }, 2);
+    const beforePause = session.pause();
+
+    expect(beforePause.paused).toBe(true);
+    expect(session.update({ throttleUp: true, steerRight: true }, 10)).toEqual(beforePause);
+
+    const resumed = session.resume();
+    expect(resumed.paused).toBe(false);
+    expect(session.update({ throttleUp: true }, 1).z).toBeLessThan(resumed.z);
+  });
+
+  it('holds lighthouse feedback and resets pause on restart', () => {
+    const routeState = new GameSession().state;
+    const session = new GameSession({
+      ...routeState,
+      started: true,
+      airborne: true,
+      altitude: 80,
+      speed: 30,
+      objective: 'return',
+      landmarkPassed: true,
+      landmarkPasses: 1,
+      landmarkNoticeSeconds: 3,
+    });
+    const paused = session.pause();
+    expect(session.update({}, 5)).toEqual(paused);
+    expect(session.restart().paused).toBe(false);
+    expect(session.state.landmarkPassed).toBe(false);
+  });
+
   it('waits for Begin flight, then throttle moves the jet along the runway', () => {
     const session = new GameSession();
     const ready = session.state;
