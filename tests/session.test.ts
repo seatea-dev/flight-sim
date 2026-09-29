@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { LIGHTHOUSE } from '../src/route';
 import { GameSession } from '../src/session';
 
 describe('runway start', () => {
@@ -176,6 +177,47 @@ describe('takeoff and flight', () => {
 });
 
 describe('lighthouse route', () => {
+  it('counts an airborne pass near the lighthouse once', () => {
+    const session = new GameSession({
+      ...new GameSession().state,
+      started: true,
+      x: LIGHTHOUSE.x + 105,
+      z: LIGHTHOUSE.z,
+      altitude: 80,
+      airborne: true,
+      objective: 'fly',
+    });
+
+    const passed = session.update({}, 1 / 60);
+    expect(passed.airborne).toBe(true);
+    expect(passed.landmarkPassed).toBe(true);
+    expect(passed.landmarkPasses).toBe(1);
+    expect(passed.objective).toBe('return');
+    expect(passed.runwayBearing).not.toBeNull();
+    expect(passed.landmarkNoticeSeconds).toBeGreaterThan(0);
+
+    expect(session.update({}, 1 / 60).landmarkPasses).toBe(1);
+  });
+
+  it('does not count an airborne pass farther from the lighthouse', () => {
+    const session = new GameSession({
+      ...new GameSession().state,
+      started: true,
+      x: LIGHTHOUSE.x + 115,
+      z: LIGHTHOUSE.z,
+      altitude: 80,
+      airborne: true,
+      objective: 'fly',
+    });
+
+    const farther = session.update({}, 1 / 60);
+    expect(farther.airborne).toBe(true);
+    expect(farther.landmarkPassed).toBe(false);
+    expect(farther.landmarkPasses).toBe(0);
+    expect(farther.objective).toBe('fly');
+    expect(farther.landmarkNoticeSeconds).toBe(0);
+  });
+
   it('counts one airborne lighthouse pass and changes the objective to return', () => {
     const session = new GameSession();
     session.begin();
